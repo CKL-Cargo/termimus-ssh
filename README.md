@@ -10,10 +10,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/termimus/termimus-ssh/releases"><img src="https://img.shields.io/badge/release-v0.9.0-00d2b4.svg?style=flat&label=version" alt="Version v0.9.0" /></a>
-  <a href="https://ko-fi.com/termimus"><img src="https://img.shields.io/badge/Ko--fi-Support%20Project-FF5E5B?logo=ko-fi&logoColor=white" alt="Support on Ko-fi" /></a>
-  <a href="https://github.com/termimus/termimus-ssh/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
-  <a href="https://github.com/termimus/termimus-ssh/pkgs/container/termimus-sync"><img src="https://img.shields.io/badge/docker-ghcr.io-blue?logo=docker" alt="Docker Image" /></a>
+  <a href="https://github.com/CKL-Cargo/termimus-ssh/releases"><img src="https://img.shields.io/badge/release-v0.9.0-00d2b4.svg?style=flat&label=version" alt="Version v0.9.0" /></a>
+  <a href="https://github.com/CKL-Cargo/termimus-ssh/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="https://github.com/CKL-Cargo/termimus-ssh/pkgs/container/termimus-sync"><img src="https://img.shields.io/badge/docker-ghcr.io-blue?logo=docker" alt="Docker Image" /></a>
   <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen" alt="Platforms" />
   <img src="https://img.shields.io/badge/encryption-AES--256--GCM-teal" alt="AES-256-GCM" />
   <img src="https://img.shields.io/badge/kdf-Argon2id-purple" alt="Argon2id" />
@@ -36,7 +35,7 @@ Unlike SaaS alternatives that force cloud account registration, Termimus is **Lo
 
 ## 📥 Download
 
-Prebuilt installers for every release are published automatically to the **[GitHub Releases](https://github.com/termimus/termimus-ssh/releases/latest)** page — no build tools required.
+Prebuilt installers for every release are published automatically to the **[GitHub Releases](https://github.com/CKL-Cargo/termimus-ssh/releases/latest)** page — no build tools required.
 
 | Platform | Installer | Notes |
 |---|---|---|
@@ -83,8 +82,8 @@ Prebuilt installers for every release are published automatically to the **[GitH
 - **Instant Script Runner**: Store frequently used shell scripts, deployment commands, and system diagnostics.
 - **Active Tab Injection**: Send snippets straight into your running terminal session with a single click.
 
-### 🤖 AI Terminal Copilot (Bring Your Own Key)
-- **Bring Your Own Provider**: Connect any OpenAI-compatible API, Anthropic, or a local **Ollama** model (auto-lists installed models). Manage multiple providers and switch the active one from **Settings → AI Copilot**.
+### 🤖 AI Terminal Copilot (Self-Hosted Models)
+- **Self-Hosted Providers Only (CKL policy)**: Connect a local **Ollama** model (auto-lists installed models) or an OpenAI-compatible gateway (vLLM, LiteLLM, LocalAI) on localhost or a private network. Public cloud AI endpoints are rejected by the backend, so terminal output never leaves the company network. Manage providers from **Settings → AI Copilot**.
 - **Natural Language → Shell Command**: Describe what you want in the Copilot side panel (`Alt+I` / `⌘I`) and get a ready-to-run command with an explanation, tailored to the session's real OS, shell, and package manager (auto-detected over a hidden exec channel, so nothing appears in your terminal).
 - **Inline `#` Prompts**: Type `# find log files larger than 100MB` at the shell prompt and press `Alt+I`. The line is replaced with the generated command. It is only typed, never executed: you review it and press Enter.
 - **Explain Errors**: Send recent terminal output to the Copilot to get a plain-language explanation of what went wrong and how to fix it.
@@ -125,7 +124,7 @@ Prebuilt installers for every release are published automatically to the **[GitH
                  ▼                                                 │
       ┌─────────────────────────────────────────────────────────────────┐
       │             Termimus Sync Server (Go / Docker)                  │
-      │         ghcr.io/termimus/termimus-sync:latest                   │
+      │         ghcr.io/ckl-cargo/termimus-sync:latest                   │
       │                                                                 │
       │  - Pure Go SQLite (modernc.org/sqlite, zero CGO)                │
       │  - Blind Relay Storage (< 20MB RAM)                             │
@@ -137,8 +136,8 @@ Prebuilt installers for every release are published automatically to the **[GitH
 
 | Component | Version | Package |
 |---|---|---|
-| Desktop Client (Tauri + Rust + React) | `v0.9.0` | [Releases](https://github.com/termimus/termimus-ssh/releases) |
-| Self-Hosted Sync Server (Go) | `v0.9.0` | [`ghcr.io/termimus/termimus-sync`](https://github.com/termimus/termimus-sync) |
+| Desktop Client (Tauri + Rust + React) | `v0.9.0` | [Releases](https://github.com/CKL-Cargo/termimus-ssh/releases) |
+| Self-Hosted Sync Server (Go) | `v0.9.0` | [`ghcr.io/ckl-cargo/termimus-sync`](https://github.com/CKL-Cargo/termimus-ssh/pkgs/container/termimus-sync) |
 
 ---
 
@@ -159,7 +158,7 @@ Prebuilt installers for every release are published automatically to the **[GitH
 #### Start Desktop App
 ```bash
 # Clone the repository
-git clone https://github.com/termimus/termimus-ssh.git
+git clone https://github.com/CKL-Cargo/termimus-ssh.git
 cd termimus-ssh
 
 # Install frontend dependencies
@@ -185,11 +184,11 @@ The sync server is packaged as a lightweight, multi-architecture Docker containe
 ```bash
 docker run -d \
   --name termimus-sync \
-  -p 8080:8080 \
+  -p 127.0.0.1:8080:8080 \
   -v termimus_data:/data \
   -e TERMIMUS_AUTH_TOKEN="$(openssl rand -hex 32)" \
   --restart unless-stopped \
-  ghcr.io/termimus/termimus-sync:latest
+  ghcr.io/ckl-cargo/termimus-sync:latest
 ```
 
 #### Option B: Docker Compose
@@ -197,11 +196,11 @@ Create `docker-compose.yml`:
 ```yaml
 services:
   termimus-sync:
-    image: ghcr.io/termimus/termimus-sync:latest
+    image: ghcr.io/ckl-cargo/termimus-sync:latest
     container_name: termimus-sync
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"  # expose only via a TLS reverse proxy
     volumes:
       - ./data:/data
     environment:
@@ -237,8 +236,9 @@ Termimus enforces defense-in-depth principles:
 | **Host Key Integrity** | TOFU / SHA-256 | Strict fingerprint validation on every connection; mismatches abort immediately to prevent MITM attacks. |
 | **Memory Hygiene** | Zeroization | Derived keys stored in memory are zeroized on vault lock using `zeroize`. |
 | **OS Keyring** | System Keyring | Derived key is securely delegated to KWallet, GNOME Secret Service, macOS Keychain, or Windows Credential Manager. |
-| **Blind Sync** | E2EE Envelope | Server accepts only version 2 encrypted bundles; zero plaintext leakage. |
-| **AI Copilot Privacy** | Redaction + Vault | Private keys, tokens, and passwords are stripped from terminal context before it reaches the AI provider; provider API keys are stored as AES-256-GCM vault credentials. |
+| **Blind Sync** | E2EE Envelope + TLS | Server accepts only version 2 encrypted bundles; the client refuses non-`https://` relay URLs (except localhost) and does not follow redirects. |
+| **No Telemetry / Update Pings** | No background egress | The app makes no network requests besides SSH hosts, the configured sync relay, and the configured self-hosted AI endpoint. |
+| **AI Copilot Privacy** | Private-network only + Redaction + Vault | AI endpoints must resolve to loopback/private addresses (enforced in the Rust HTTP client, including at DNS-resolution time, with proxies and redirects disabled); private keys, tokens, and passwords are stripped from terminal context before it reaches the model; provider API keys are stored as AES-256-GCM vault credentials. |
 
 ---
 
@@ -321,18 +321,6 @@ Want to contribute a new language (e.g. Japanese `ja`, Spanish `es`, German `de`
 
 ---
 
-## 💖 Support the Project
-
-If you find Termimus useful and want to support its ongoing development (server infrastructure, domain, and new features), consider buying a coffee! Every contribution helps keep the project independent, local-first, and completely free.
-
-<p align="center">
-  <a href="https://ko-fi.com/termimus" target="_blank">
-    <img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" height="40" alt="Buy Me a Coffee at ko-fi.com" />
-  </a>
-</p>
-
----
-
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
@@ -348,6 +336,8 @@ Contributions, issues, and feature requests are welcome!
 ## 📄 License
 
 Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for more information.
+
+This repository is CKL's fork of the open-source Termimus project. The original copyright and MIT permission notice are retained as the license requires; CKL modifications are released under the same license.
 
 ---
 

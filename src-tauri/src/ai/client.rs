@@ -290,11 +290,20 @@ impl AiClient {
         // generations (e.g. slow local Ollama) mid-stream. `read_timeout` resets on
         // every received chunk, so it only fires when the server actually stalls.
         // Non-streaming requests set their own per-request total timeout.
+        //
+        // CKL data policy (see `netpolicy`): AI traffic may only reach
+        // self-hosted endpoints on private networks. The resolver refuses public
+        // addresses at connect time, proxies are disabled (a proxy would resolve
+        // the real target remotely, bypassing the check) and redirects are not
+        // followed (a redirect could point at a public IP literal).
         let http = reqwest::Client::builder()
             .connect_timeout(Duration::from_secs(10))
             .read_timeout(Duration::from_secs(60))
+            .dns_resolver(Arc::new(crate::netpolicy::PrivateOnlyResolver))
+            .no_proxy()
+            .redirect(reqwest::redirect::Policy::none())
             .build()
-            .unwrap_or_else(|_| reqwest::Client::new());
+            .expect("failed to build AI HTTP client");
         Self {
             http,
             inflight: Mutex::new(InflightRegistry::default()),
@@ -356,6 +365,7 @@ impl AiClient {
         model_name: &str,
         api_key: Option<&str>,
     ) -> Result<String, String> {
+        crate::netpolicy::ensure_private_endpoint(base_url).await?;
         if provider_type == "ollama" && (model_name.is_empty() || model_name == "default") {
             // Check Ollama server availability
             let root_url = base_url.trim_end_matches('/').trim_end_matches("/v1");
@@ -387,6 +397,7 @@ impl AiClient {
 
     /// Fetch installed models from local Ollama instance (GET /api/tags)
     pub async fn fetch_ollama_models(&self, base_url: &str) -> Result<Vec<String>, String> {
+        crate::netpolicy::ensure_private_endpoint(base_url).await?;
         let root_url = base_url
             .trim_end_matches('/')
             .trim_end_matches("/v1");
@@ -438,6 +449,7 @@ impl AiClient {
         messages: &[ChatMessage],
         max_tokens: Option<u32>,
     ) -> Result<String, String> {
+        crate::netpolicy::ensure_private_endpoint(base_url).await?;
         if provider_type == "anthropic" {
             self.anthropic_chat_sync(base_url, model_name, api_key, messages, max_tokens).await
         } else {
@@ -460,6 +472,7 @@ impl AiClient {
     where
         F: FnMut(&str, bool) -> Result<(), String> + Send,
     {
+        crate::netpolicy::ensure_private_endpoint(base_url).await?;
         if provider_type == "anthropic" {
             self.stream_anthropic(base_url, model_name, api_key, messages, on_chunk).await
         } else {

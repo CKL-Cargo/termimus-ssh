@@ -31,23 +31,10 @@ interface ProviderPreset {
   keyHelp: string;
 }
 
+// CKL data policy: AI requests carry terminal output, host labels and
+// usernames, so only self-hosted endpoints on localhost / private networks are
+// offered. The backend (`netpolicy`) rejects public endpoints regardless.
 const PRESETS: ProviderPreset[] = [
-  {
-    id: "deepseek",
-    name: "DeepSeek (V3 / R1)",
-    type: "openai_compatible",
-    baseUrl: "https://api.deepseek.com/v1",
-    defaultModel: "deepseek-chat",
-    keyHelp: "Get your key from platform.deepseek.com",
-  },
-  {
-    id: "openai",
-    name: "OpenAI (GPT-4o)",
-    type: "openai_compatible",
-    baseUrl: "https://api.openai.com/v1",
-    defaultModel: "gpt-4o-mini",
-    keyHelp: "Get your key from platform.openai.com",
-  },
   {
     id: "ollama",
     name: "Ollama (100% Local)",
@@ -57,20 +44,12 @@ const PRESETS: ProviderPreset[] = [
     keyHelp: "Offline, no API key required for local Ollama",
   },
   {
-    id: "anthropic",
-    name: "Anthropic Claude",
-    type: "anthropic",
-    baseUrl: "https://api.anthropic.com/v1",
-    defaultModel: "claude-3-5-haiku-20241022",
-    keyHelp: "Get your key from console.anthropic.com",
-  },
-  {
     id: "custom",
-    name: "Custom (OpenAI-Compatible)",
+    name: "Self-hosted (OpenAI-Compatible)",
     type: "openai_compatible",
-    baseUrl: "https://api.groq.com/openai/v1",
-    defaultModel: "llama-3.3-70b-versatile",
-    keyHelp: "Works with Groq, OpenRouter, Together, vLLM, etc.",
+    baseUrl: "http://localhost:8000/v1",
+    defaultModel: "qwen2.5-coder-7b-instruct",
+    keyHelp: "vLLM, LiteLLM, LocalAI or an internal LLM gateway on a private network",
   },
 ];
 
@@ -85,11 +64,11 @@ export function AiProviderModal({ isOpen, onClose, initialData }: AiProviderModa
   );
   const isUnlocked = useVaultStore((s) => s.isUnlocked);
 
-  const [selectedPreset, setSelectedPreset] = useState<string>("deepseek");
+  const [selectedPreset, setSelectedPreset] = useState<string>("ollama");
   const [name, setName] = useState("");
-  const [providerType, setProviderType] = useState<"openai_compatible" | "anthropic" | "ollama">("openai_compatible");
-  const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com/v1");
-  const [modelName, setModelName] = useState("deepseek-chat");
+  const [providerType, setProviderType] = useState<"openai_compatible" | "anthropic" | "ollama">("ollama");
+  const [baseUrl, setBaseUrl] = useState(PRESETS[0].baseUrl);
+  const [modelName, setModelName] = useState(PRESETS[0].defaultModel);
   const [apiKey, setApiKey] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [showKey, setShowKey] = useState(false);
@@ -112,10 +91,10 @@ export function AiProviderModal({ isOpen, onClose, initialData }: AiProviderModa
       setApiKey(""); // Keep empty to preserve existing
       setSelectedPreset("custom");
     } else {
-      // Default to DeepSeek preset
+      // Default to the local Ollama preset
       const p = PRESETS[0];
       setSelectedPreset(p.id);
-      setName("DeepSeek");
+      setName("Ollama");
       setProviderType(p.type);
       setBaseUrl(p.baseUrl);
       setModelName(p.defaultModel);
@@ -322,10 +301,11 @@ export function AiProviderModal({ isOpen, onClose, initialData }: AiProviderModa
               type="text"
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="https://api.openai.com/v1"
+              placeholder="http://localhost:11434/v1"
               className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--border)] bg-[var(--surface-low)] text-[var(--text-primary)] font-mono placeholder-[var(--text-muted)] focus:outline-hidden focus:border-[var(--primary)]/60 focus:ring-1 focus:ring-[var(--primary)]/30 transition-all"
               required
             />
+            <p className="mt-1 text-[11px] text-[var(--text-muted)]">{t("ai.provider.selfHostedOnly")}</p>
           </div>
 
           {/* Model Name */}

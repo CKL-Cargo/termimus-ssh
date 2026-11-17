@@ -29,7 +29,6 @@ import { AiSettingsTab } from "./AiSettingsTab";
 import { useVaultStore } from "../../stores/useVaultStore";
 import { useKnownHostsStore } from "../../stores/useKnownHostsStore";
 import { useConfirmStore } from "../../stores/useConfirmStore";
-import { useUpdateStore } from "../../stores/useUpdateStore";
 import {
   useSettingsStore,
   AutoLockPolicy,
@@ -43,7 +42,6 @@ export function SettingsView() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const { knownHosts } = useKnownHostsStore();
-  const { hasUpdate } = useUpdateStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const tabs: {
@@ -53,7 +51,7 @@ export function SettingsView() {
     badge?: number;
     badgeDot?: boolean;
   }[] = [
-    { id: "general", label: t("settings.tabs.general"), icon: SlidersHorizontal, badgeDot: hasUpdate },
+    { id: "general", label: t("settings.tabs.general"), icon: SlidersHorizontal },
     { id: "security", label: t("settings.tabs.security"), icon: Lock },
     { id: "terminal", label: t("settings.tabs.terminal"), icon: Palette },
     { id: "sync", label: t("settings.tabs.sync"), icon: Cloud },

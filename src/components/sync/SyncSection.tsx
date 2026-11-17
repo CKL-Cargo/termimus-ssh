@@ -139,11 +139,12 @@ export function SyncSection() {
 
   const dockerCommand = `docker run -d \\
   --name termimus-sync \\
-  -p 8080:8080 \\
+  -p 127.0.0.1:8080:8080 \\
   -v termimus_data:/data \\
   -e TERMIMUS_AUTH_TOKEN="your-secret-token" \\
   --restart unless-stopped \\
-  ghcr.io/termimus/termimus-sync:latest`;
+  ghcr.io/ckl-cargo/termimus-sync:latest
+# Serve it over https:// via a TLS reverse proxy (required)`;
 
   return (
     <div className="space-y-5">

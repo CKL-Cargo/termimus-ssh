@@ -1699,9 +1699,13 @@ struct GetBundleResponse {
     encrypted_blob: Option<String>,
 }
 
+/// Redirects are not followed: an `https://` relay redirecting to `http://`
+/// would otherwise downgrade the bearer token to plaintext, bypassing
+/// `netpolicy::require_secure_sync_url`.
 fn sync_http_client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
+        .redirect(reqwest::redirect::Policy::none())
         .build()
         .map_err(|e| format!("Failed to initialize HTTP client: {e}"))
 }
@@ -1722,6 +1726,14 @@ pub async fn sync_test_connection(
     server_url: String,
     auth_token: Option<String>,
 ) -> Result<SyncTestResult, String> {
+    if let Err(e) = crate::netpolicy::require_secure_sync_url(&server_url) {
+        return Ok(SyncTestResult {
+            ok: false,
+            server_version: None,
+            revision: None,
+            error: Some(e),
+        });
+    }
     let base = server_url.trim_end_matches('/');
     let client = sync_http_client()?;
 
@@ -1805,6 +1817,7 @@ pub async fn sync_push(
         return Err("Sync Passphrase is required. Termimus enforces zero-knowledge E2EE encryption before uploading to the relay.".to_string());
     }
 
+    crate::netpolicy::require_secure_sync_url(&server_url)?;
     let encrypted_blob = backup_export(state, Some(password.to_string()))?;
 
     let base = server_url.trim_end_matches('/');
@@ -1851,6 +1864,7 @@ pub async fn sync_pull(
     sync_password: String,
     replace_all: Option<bool>,
 ) -> Result<ImportSummary, String> {
+    crate::netpolicy::require_secure_sync_url(&server_url)?;
     let base = server_url.trim_end_matches('/');
     let client = sync_http_client()?;
 
@@ -1941,6 +1955,7 @@ pub async fn sync_get_devices(
     server_url: String,
     auth_token: Option<String>,
 ) -> Result<Vec<ConnectedDevice>, String> {
+    crate::netpolicy::require_secure_sync_url(&server_url)?;
     let base = server_url.trim_end_matches('/');
     let client = sync_http_client()?;
 
@@ -2043,6 +2058,7 @@ pub fn ai_provider_save(
     id: Option<String>,
     input: AiProviderInput,
 ) -> Result<AiProviderSummary, String> {
+    crate::netpolicy::check_private_endpoint_syntax(&input.base_url)?;
     let now = Utc::now().to_rfc3339();
     let provider_id = id.unwrap_or_else(|| format!("ai-{}", Uuid::new_v4()));
 

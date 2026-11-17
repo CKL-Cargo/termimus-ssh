@@ -1,6 +1,19 @@
 import { useEffect, useRef } from "react";
 import { useSyncStore } from "../stores/useSyncStore";
 
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
+
+/** True for https:// URLs, or http:// on loopback (the CSP allows no other ws:// hosts). */
+function isSecureSyncUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:") return true;
+    return parsed.protocol === "http:" && LOOPBACK_HOSTS.has(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Root-level hook that maintains a continuous WebSocket connection
  * with the self-hosted sync relay server whenever autoSync is enabled.
@@ -21,6 +34,11 @@ export function useLiveSync() {
 
     const cleanUrl = serverUrl.trim().replace(/\/+$/, "");
     if (!cleanUrl) return;
+
+    // CKL data policy (mirrors `netpolicy::require_secure_sync_url` in Rust):
+    // the token travels in the query string, so only connect over wss://,
+    // with plain ws:// allowed for loopback testing only.
+    if (!isSecureSyncUrl(cleanUrl)) return;
 
     let wsUrl = cleanUrl.replace(/^http/, "ws");
     if (authToken) {

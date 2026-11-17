@@ -6,7 +6,6 @@ export const navigationEn = {
   snippets: "Snippets & Scripts",
   tunnels: "Port Forwarding",
   settings: "Settings",
-  update: "Update",
   home: "Home",
   homeTitle: "Home / Hosts (Alt+H)",
   quickConnect: "Quick Connect",
