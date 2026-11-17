@@ -18,12 +18,25 @@ A lightweight, zero-knowledge, self-hosted synchronization relay server for **Te
 ```bash
 docker run -d \
   --name termimus-sync \
-  -p 8080:8080 \
+  -p 127.0.0.1:8080:8080 \
   -v termimus_data:/data \
   -e TERMIMUS_AUTH_TOKEN="$(openssl rand -hex 32)" \
   --restart unless-stopped \
-  ghcr.io/termimus/termimus-sync:latest
+  ghcr.io/ckl-cargo/termimus-sync:latest
 ```
+
+> **TLS is required.** CKL builds of the desktop app refuse `http://` sync URLs
+> (except `localhost`), because the bearer token and device names would travel
+> in plaintext. The relay itself speaks plain HTTP, so bind it to loopback as
+> above and put a TLS reverse proxy in front of it, e.g. with Caddy:
+>
+> ```caddyfile
+> sync.internal.example {
+>     reverse_proxy 127.0.0.1:8080
+> }
+> ```
+>
+> Then use `https://sync.internal.example` as the Server URL in the app.
 
 ### Option 2: Docker Compose
 

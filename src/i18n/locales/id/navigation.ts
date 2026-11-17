@@ -8,7 +8,6 @@ export const navigationId: typeof navigationEn = {
   snippets: "Cuplikan Kode",
   tunnels: "Port Forwarding",
   settings: "Pengaturan",
-  update: "Pembaruan",
   home: "Beranda",
   homeTitle: "Beranda / Host (Alt+H)",
   quickConnect: "Koneksi Cepat",

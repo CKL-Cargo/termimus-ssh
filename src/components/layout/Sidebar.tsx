@@ -7,7 +7,6 @@ import {
   KeyRound,
   Settings,
   CloudCheck,
-  ArrowUpCircle,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useVaultStore } from "../../stores/useVaultStore";
@@ -17,8 +16,6 @@ import { useTunnelStore } from "../../stores/useTunnelStore";
 import { useKeychainStore } from "../../stores/useKeychainStore";
 import { useWorkspaceStore } from "../../stores/useWorkspaceStore";
 import { useUpdateStore } from "../../stores/useUpdateStore";
-import { openExternalUrl } from "../../lib/openUrl";
-import kofiIcon from "../../assets/kofi.png";
 
 export type ActiveTab = "hosts" | "workspaces" | "terminal" | "sftp" | "keychain" | "tunnels" | "snippets" | "settings";
 
@@ -35,7 +32,7 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
   const hasActiveTunnels = useTunnelStore((s) => s.activeRuleIds.size > 0);
   const keychainCount = useKeychainStore((s) => s.items.length);
   const presetCount = useWorkspaceStore((s) => s.presets.length);
-  const { currentVersion, latestVersion, hasUpdate, releaseUrl } = useUpdateStore();
+  const currentVersion = useUpdateStore((s) => s.currentVersion);
 
   const navItems: {
     icon: typeof Server;
@@ -133,11 +130,6 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
             <span className="flex-1 text-left truncate text-[13px] font-medium">
               {t("nav.settings")}
             </span>
-            {hasUpdate && (
-              <span className="mr-2 rounded bg-[var(--primary)]/15 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-[var(--primary)] border border-[var(--primary)]/30 animate-pulse">
-                {t("nav.update")}
-              </span>
-            )}
           </button>
         </div>
 
@@ -160,46 +152,15 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
             </div>
           </div>
 
-          {/* Micro Footer: Version / Update (left) + Mini Ko-fi pill (right) */}
-          <div className="flex items-center justify-between overflow-hidden whitespace-nowrap px-1 pt-1.5 border-t border-[var(--border)]/40 mt-1">
-            {hasUpdate ? (
-              <button
-                type="button"
-                onClick={() => openExternalUrl(releaseUrl)}
-                title={`Update available: v${latestVersion}. Click to open release page.`}
-                className="group/upd flex items-center gap-1 font-mono text-[10px] text-[var(--primary)] hover:underline cursor-pointer font-semibold transition-colors"
-              >
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--primary)] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--primary)]" />
-                </span>
-                <span>Update v{latestVersion}</span>
-                <ArrowUpCircle size={10} className="shrink-0 group-hover/upd:translate-y-[-1px] transition-transform" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onNavChange("settings")}
-                title={`Termimus v${currentVersion} (Click to open Settings & About)`}
-                className="font-mono text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer select-none"
-              >
-                v{currentVersion}
-              </button>
-            )}
-
-            {/* Compact Ko-fi link */}
+          {/* Micro Footer: Version */}
+          <div className="flex items-center overflow-hidden whitespace-nowrap px-1 pt-1.5 border-t border-[var(--border)]/40 mt-1">
             <button
               type="button"
-              onClick={() => openExternalUrl("https://ko-fi.com/termimus")}
-              title="Support Termimus on Ko-fi"
-              className="group/kofi inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container)] transition-colors cursor-pointer"
+              onClick={() => onNavChange("settings")}
+              title={`Termimus v${currentVersion} (Click to open Settings & About)`}
+              className="font-mono text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer select-none"
             >
-              <img
-                src={kofiIcon}
-                alt="Ko-fi"
-                className="w-3.5 h-auto object-contain transition-transform group-hover/kofi:scale-110 drop-shadow-xs"
-              />
-              <span className="font-medium">Support</span>
+              v{currentVersion}
             </button>
           </div>
         </div>

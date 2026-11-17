@@ -2,6 +2,7 @@ pub mod ai;
 pub mod biometric;
 pub mod commands;
 pub mod db;
+pub mod netpolicy;
 pub mod pty;
 pub mod sftp;
 pub mod ssh;

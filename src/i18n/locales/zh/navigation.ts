@@ -8,7 +8,6 @@ export const navigationZh: typeof navigationEn = {
   snippets: "代码片段与脚本",
   tunnels: "端口转发",
   settings: "设置",
-  update: "更新",
   home: "首页",
   homeTitle: "首页 / 主机 (Alt+H)",
   quickConnect: "快速连接",
